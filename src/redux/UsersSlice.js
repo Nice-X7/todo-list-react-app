@@ -1,31 +1,29 @@
-import { createSlice } from '@reduxjs/toolkit'
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
   users: [],
-  loading: false
-}
+  loading: false,
+};
 
-export const loadUsers = () => {
-  return dispatch => {
-    dispatch({type: 'load/users/start'})
+export const loadUsers = createAsyncThunk("load/users/start", async () => {
+  const response = await fetch("https://jsonplaceholder.typicode.com/users");
+  return response.json();
+});
 
-    fetch('https://jsonplaceholder.typicode.com/users')
-    .then((responce) => responce.json())
-    .then((json) => {
-        dispatch({
-            type: 'load/users/fulfilled',
-            payload: json
-        })
-    })
-  }
-}
-
-export const counterSlice = createSlice({
-  name: 'Users',
+export const userSlice = createSlice({
+  name: "Users",
   initialState,
-  reducers: {
-
+  reducers: {},
+  extraReducers: (builder) => {
+    builder
+      .addCase(loadUsers.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(loadUsers.fulfilled, (state, action) => {
+        state.users = action.payload;
+        state.loading = false;
+      });
   },
-})
+});
 
-export default counterSlice.reducer
+export default userSlice.reducer;
